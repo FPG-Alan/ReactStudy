@@ -72,15 +72,19 @@ export function computeAsyncExpiration(
 
 // We intentionally set a higher expiration time for interactive updates in
 // dev than in production.
+// 在dev环境下， 我们故意的为交互更新设置了一个更高的过期时间
 //
 // If the main thread is being blocked so long that you hit the expiration,
 // it's a problem that could be solved with better scheduling.
+// 如果主线程被阻塞时间久到过期时间到了， 说明这是一个问题， 可以通过更好的调度来解决
 //
 // People will be more likely to notice this and fix it with the long
 // expiration time in development.
+// 使用更长的过期时间， 你就更可能会注意到（这种问题）并且修复
 //
 // In production we opt for better UX at the risk of masking scheduling
 // problems, by expiring fast.
+// 在生产环境下我们会冒着掩盖调度问题的风险， 通过更快的过期来提供更好的用户体验
 export const HIGH_PRIORITY_EXPIRATION = __DEV__ ? 500 : 150;
 export const HIGH_PRIORITY_BATCH_SIZE = 100;
 
