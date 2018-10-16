@@ -180,6 +180,7 @@ if (__DEV__) {
   };
 }
 
+// 链表
 export function createUpdateQueue<State>(baseState: State): UpdateQueue<State> {
   const queue: UpdateQueue<State> = {
     baseState,

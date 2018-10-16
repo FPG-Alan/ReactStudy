@@ -233,6 +233,7 @@ let isWorking: boolean = false;
 let nextUnitOfWork: Fiber | null = null;
 let nextRoot: FiberRoot | null = null;
 // The time at which we're currently rendering work.
+// 当前渲染工作的时间
 let nextRenderExpirationTime: ExpirationTime = NoWork;
 let nextLatestAbsoluteTimeoutMs: number = -1;
 let nextRenderDidError: boolean = false;
@@ -1198,6 +1199,9 @@ function renderRoot(
   // previously yielded work.
   // 检查任务是全新开始的还是从一个之前运行的任务中恢复的
   // 疑问的是, 这里满足条件的分支, 是上面两种情况的哪一种?
+
+  // （16/10/2018）我觉得这个if内应该是 'fresh stack'
+  // 如果是从一个中断任务中恢复的， 则应该不需要重新设置这些参数(expirationtTime, nextRoot, nextUnitOfWork)
   if (
     expirationTime !== nextRenderExpirationTime ||
     root !== nextRoot ||
@@ -1671,7 +1675,7 @@ function retrySuspendedRoot(
 // 3. 找到当前 Fiber 树的根节点并返回.
 function scheduleWorkToRoot(fiber: Fiber, expirationTime): FiberRoot | null {
   // Update the source fiber's expiration time
-  // 更新fiber的过期时间
+  // 更新fiber以及其altnate的过期时间
   if (
     fiber.expirationTime === NoWork ||
     fiber.expirationTime > expirationTime
@@ -1686,6 +1690,9 @@ function scheduleWorkToRoot(fiber: Fiber, expirationTime): FiberRoot | null {
   ) {
     alternate.expirationTime = expirationTime;
   }
+
+
+
   // Walk the parent path to the root and update the child expiration time.
   let node = fiber.return;
   if (node === null && fiber.tag === HostRoot) {
@@ -1796,9 +1803,7 @@ function scheduleWork(fiber: Fiber, expirationTime: ExpirationTime) {
     storeInteractionsForExpirationTime(root, expirationTime, true);
   }
 
-  // 存疑, 这里是判断从一个打断中恢复, 还是正在经历一个打断?
-  // 为何通过这些参数就能判断被打断?
-  // 不在工作, 下一次渲染过期时间不为0, 当前过期时间小于下一次渲染过期时间.
+  // 这里是说， 当前的任务被这个新任务打断了， 因为新任务的过期时间更早
   if (
     !isWorking &&
     nextRenderExpirationTime !== NoWork &&
